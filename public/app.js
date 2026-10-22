@@ -25,8 +25,53 @@
     } catch (e) { /* almacenamiento no disponible */ }
     return proyectoDefault();
   }
+  const SNAP_KEY = "audioredes.historial.v1";
+  let almacenOk = true;
   function guardar() {
-    try { localStorage.setItem(LS_KEY, JSON.stringify(P)); } catch (e) { /* ignorar */ }
+    try {
+      P.guardado = new Date().toISOString();
+      localStorage.setItem(LS_KEY, JSON.stringify(P));
+      almacenOk = true;
+    } catch (e) { almacenOk = false; }
+    pintarGuardado();
+  }
+  function pintarGuardado() {
+    const el = document.getElementById("saveState");
+    if (!el) return;
+    if (!almacenOk) { el.textContent = "⚠ No se puede guardar en este navegador (¿modo incógnito?)"; el.className = "save-state bad"; return; }
+    const t = P.guardado ? new Date(P.guardado).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }) : "—";
+    el.textContent = P.guardado ? "✓ Guardado " + t : "✓ Guardado automático activo";
+    el.className = "save-state";
+  }
+  function historial() {
+    try { return JSON.parse(localStorage.getItem(SNAP_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function puntoGuardado(nota) {
+    guardar();
+    const h = historial();
+    h.unshift({ fecha: new Date().toISOString(), nota: nota || "", proyecto: JSON.parse(JSON.stringify(P)) });
+    try { localStorage.setItem(SNAP_KEY, JSON.stringify(h.slice(0, 15))); toast("Punto de guardado creado."); }
+    catch (e) { toast("No hay espacio para más puntos de guardado. Descarga un .json."); }
+    renderHistorial();
+  }
+  function renderHistorial() {
+    const box = document.getElementById("historial");
+    if (!box) return;
+    const h = historial();
+    box.innerHTML = h.length ? h.map((s, i) => `<li><span><b>${new Date(s.fecha).toLocaleString("es-MX")}</b> · ${esc(s.proyecto.meta?.nombre || "")} · ${s.proyecto.equipos?.length || 0} equipos${s.nota ? " · " + esc(s.nota) : ""}</span>
+      <span><button class="btn sm" data-snap-load="${i}">Restaurar</button> <button class="btn sm ghost" data-snap-del="${i}">✕</button></span></li>`).join("")
+      : '<li class="hint">Aún no hay puntos de guardado.</li>';
+    box.querySelectorAll("[data-snap-load]").forEach((b) => (b.onclick = () => {
+      if (!confirm("¿Restaurar este punto? Lo actual se guarda antes como punto automático.")) return;
+      puntoGuardado("Automático antes de restaurar");
+      P = historial()[Number(b.dataset.snapLoad) + 1].proyecto;
+      guardar(); renderTodo(); toast("Punto de guardado restaurado.");
+    }));
+    box.querySelectorAll("[data-snap-del]").forEach((b) => (b.onclick = () => {
+      const h2 = historial(); h2.splice(Number(b.dataset.snapDel), 1);
+      try { localStorage.setItem(SNAP_KEY, JSON.stringify(h2)); } catch (e) {}
+      renderHistorial();
+    }));
   }
   function toast(msg) {
     const t = $("#toast");
@@ -153,6 +198,7 @@
     if (!d.lucesVideo) out.push({ n: "warn", t: "Falta decidir si iluminación y video comparten la red de Dante." });
     if (d.lucesVideo && d.lucesVideo !== "separada") out.push({ n: "info", t: "Con video IP en el mismo segmento, IGMP debe estar activo; un querier por VLAN [DA10203]." });
     if (!d.switch16Modelo) out.push({ n: "warn", t: "Falta el modelo exacto del switch de 16 puertos para verificar EEE, IGMP y QoS." });
+    if (d.latenciaDVS) out.push({ n: "info", t: `Rutas desde/hacia DVS usan ${d.latenciaDVS} (se usa la mayor entre Tx y Rx); las rutas SQ↔SQ no cambian [DVS-UG][TI317].` });
     const pend = P.equipos.filter((e) => e.estado === "pendiente").length;
     if (pend) out.push({ n: "warn", t: `${pend} equipo(s) marcados como pendientes.` });
     if (!out.some((x) => x.n === "bad")) out.unshift({ n: "ok", t: "Sin conflictos de IP, nombres ni puertos." });
@@ -169,6 +215,8 @@
     renderAyuda();
     renderEstado();
     renderDiagrama();
+    renderHistorial();
+    pintarGuardado();
   }
   function cambio() {
     guardar();
@@ -199,7 +247,8 @@
     { k: "tarjetaSQ6", l: "Tarjeta Dante SQ6", o: ["", "M-SQ-SDANTE (V1)", "M-SQ-DANT64 (V3)", "M-SQ-DANT32 (V3)"] },
     { k: "lider", l: "Consola líder de reloj", o: ["SQ5", "SQ6"] },
     { k: "fs", l: "Frecuencia de muestreo Dante", o: ["", "48 kHz", "96 kHz"] },
-    { k: "latencia", l: "Latencia Dante", o: ["", "0.25 ms", "0.5 ms", "1 ms", "5 ms"] },
+    { k: "latencia", l: "Latencia Dante (SQ ↔ SQ)", o: ["", "0.25 ms", "0.5 ms", "1 ms", "5 ms"] },
+    { k: "latenciaDVS", l: "Latencia DVS (Mac QLab)", o: ["", "4 ms", "6 ms", "10 ms", "20 ms (DVS Pro)", "40 ms (DVS Pro)"] },
     { k: "lucesVideo", l: "Iluminación y video", o: [["", ""], ["separada", "Red física separada"], ["misma", "Misma red, misma VLAN"], ["vlan", "Misma red, VLANs separadas"]] },
     { k: "usarPuertoNetworkSQ", l: "¿Usarás SQ-MixPad?", o: ["", "Sí", "No"] },
     { k: "switch16Modelo", l: "Modelo switch 16 puertos", text: true },
@@ -612,6 +661,10 @@
   };
   $("#btnReset").onclick = () => { if (confirm("¿Borrar el proyecto actual y restaurar el ejemplo?")) { P = proyectoDefault(); guardar(); renderTodo(); } };
   $("#btnLogout").onclick = () => salir("");
+  $("#btnSave").onclick = () => puntoGuardado(prompt("Nota para este punto de guardado (opcional):", "") || "");
+  // Guardar también al cerrar o cambiar de app (por si se apaga el celular)
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") guardar(); });
+  window.addEventListener("pagehide", guardar);
 
   // ------------------------------------------------------------ pestañas
   $$("#tabs button").forEach((b) => (b.onclick = () => {

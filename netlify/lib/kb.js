@@ -13,6 +13,7 @@ FUENTES DISPONIBLES (códigos):
 [M4250-DS] NETGEAR, M4250 Datasheet (DS-M4250-26Jun2026)
 [M4250-AV] NETGEAR, M4250 AV UI User Manual
 [NG-REF] NETGEAR, AV over IP Switch Reference Guide (Feb 2024)
+[DVS-UG] Audinate, Dante Virtual Soundcard User Guide (Dante Latency) y FAQs de DVS (audinate.com)
 
 DIRECCIONAMIENTO IP
 - Dante usa DHCP si existe; si no, link-local 169.254.0.0/16 (primario) y 172.31.0.0/16 (secundario). Siguen buscando DHCP después. [DA10203][TI317]
@@ -36,6 +37,7 @@ FRECUENCIA DE MUESTREO / CANALES
 
 LATENCIA
 - Regla: ~0.1 ms por salto (hop) de switch Gigabit; cada dispositivo Dante con switch interno también cuenta. Tabla: hasta 3 saltos 0.25 ms; hasta 5: 0.5 ms; hasta 10: 1 ms; 11+: 5 ms; multicast mínimo 1 ms. Si Tx y Rx difieren, se usa la mayor. Verificar en histograma de latencia (rojo = paquetes perdidos). [TI317][L1]
+- DVS: latencias 4, 6 y 10 ms (20 y 40 ms solo DVS Pro, para más de 64 canales). 4 ms requiere computadora con poco jitter; computadoras con mal desempeño de scheduling pueden necesitar 10 ms. Latencia muy baja = dropouts intermitentes. Un receptor que solo soporta latencias mayores impone la suya. La latencia de DVS es independiente y NO cambia la latencia del resto de la red. [DVS-UG]
 
 SWITCH
 - Gigabit recomendado; non-blocking. EEE/Green Ethernet (802.3az) debe estar DESACTIVADO en puertos Dante (causa dropouts). [DA10203][TI317][L1]
@@ -57,5 +59,5 @@ ALLEN & HEATH SQ + DANTE
 - M-SQ-SDANTE requiere firmware SQ V1.2.2+. Tarjetas V3 requieren firmware SQ actualizado. [AP11431][AP13279]
 - Known issue tarjeta V1 (fw 1.0.6): "Identify" de Dante Controller no funciona; agregar DHCP a una red Dante activa puede afectar controles de preamps DT. [SQ-RN]
 
-NO VERIFICADO (no hay documento cargado): Art-Net/iluminación, equipos de video, QLab, versión/licencia de DVS, switch Netgear de 16 puertos (modelo desconocido), rutas exactas de menú de Dante Controller por versión.
+NO VERIFICADO (no hay documento cargado): Art-Net/iluminación, equipos de video, QLab, licencia de DVS, switch Netgear de 16 puertos (modelo desconocido), rutas exactas de menú de Dante Controller por versión.
 `;

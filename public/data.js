@@ -16,6 +16,7 @@ const FUENTES = {
   "M4250-DS": "NETGEAR · M4250 Datasheet",
   "M4250-AV": "NETGEAR · M4250 AV UI User Manual",
   "NG-REF": "NETGEAR · AV over IP Switch Reference Guide (2024)",
+  "DVS-UG": "Audinate · Dante Virtual Soundcard User Guide (Dante Latency) y FAQs de DVS",
 };
 
 const TIPOS = {
@@ -56,6 +57,7 @@ function proyectoDefault() {
       lider: "SQ6",
       fs: "48 kHz",
       latencia: "",
+      latenciaDVS: "",
       lucesVideo: "",
       switch16Modelo: "",
       usarPuertoNetworkSQ: "",
@@ -150,6 +152,7 @@ const CHECKLIST = [
       { id: "mac1", t: "IP fija 192.168.1.51 / 255.255.255.0 en el puerto Ethernet cableado de 1 Gbps. Dante no transporta audio por Wi‑Fi.", f: ["L1", "DA10203"] },
       { id: "mac2", t: "Si Dante Controller no ve equipos: revisa firewall/antivirus y que esté seleccionada la tarjeta de red correcta.", f: ["TI317"] },
       { id: "mac3", t: "Configura canales de DVS (en Mac, Core Audio hasta 64×64) y la misma frecuencia que las SQ.", f: ["L1"] },
+      { id: "mac5", t: "Latencia de DVS: 4, 6 o 10 ms (20 y 40 ms solo DVS Pro). 4 ms exige computadora potente; con equipos menos potentes 10 ms es lo más seguro. La latencia de DVS no cambia la de las rutas SQ↔SQ.", f: ["DVS-UG"] },
       { id: "mac4", t: "DVS: se usará la última versión. PENDIENTE verificar: número de versión exacto, licencia activada, que DVS esté en 48 kHz y cómo QLab envía audio a DVS (falta manual de QLab/DVS).", f: [], pendiente: true },
     ],
   },

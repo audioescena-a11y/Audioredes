@@ -42,6 +42,8 @@
         <button data-tab="ia">Asistente IA</button>
       </nav>
       <div class="top-actions">
+        <span id="saveState" class="save-state"></span>
+        <button class="btn primary" id="btnSave" title="Crear punto de guardado">Guardar</button>
         <button class="btn" id="btnXlsx">Excel</button>
         <button class="btn" id="btnPdf">PDF</button>
         <button class="btn ghost" id="btnMenu" title="Más">⋯</button>
@@ -85,6 +87,11 @@
           <h2>Decisiones pendientes</h2>
           <p class="hint">Estas respuestas definen la configuración. Mientras estén vacías, el plan no está listo para show.</p>
           <div class="form cols3" id="decisiones"></div>
+        </div>
+        <div class="card">
+          <h2>Puntos de guardado</h2>
+          <p class="hint">Todo se guarda solo en este navegador con cada cambio. El botón <b>Guardar</b> crea además un punto con fecha y hora para regresar a él (máx. 15). Si cambias de celular o computadora, usa ⋯ → Guardar proyecto (.json).</p>
+          <ul id="historial" class="snaps"></ul>
         </div>
       </section>
 
