@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Audioredes · AUDIOESCENA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="app.css" />
+</head>
+<body>
+  <!-- ===================== ACCESO ===================== -->
+  <section id="gate" class="gate">
+    <div class="gate-card">
+      <div class="brand">
+        <img class="logo" src="assets/logo.png" alt="AUDIOESCENA" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'logo-text',textContent:'AUDIOESCENA'}))" />
+        <span class="tag">AUDIOREDES</span>
+      </div>
+      <form id="gateForm" autocomplete="off">
+        <label for="answer">¿A qué sabe el Omelette?</label>
+        <input id="answer" type="password" placeholder="Tu respuesta" required maxlength="60" />
+        <button type="submit" class="btn primary">Entrar</button>
+        <p id="gateMsg" class="gate-msg" role="alert"></p>
+      </form>
+    </div>
+  </section>
+
+  <!-- ===================== APP ===================== -->
+  <div id="app" class="app" hidden>
+    <header class="top">
+      <div class="brand small">
+        <img class="logo" src="assets/logo.png" alt="AUDIOESCENA" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'logo-text',textContent:'AUDIOESCENA'}))" />
+        <span class="tag">AUDIOREDES</span>
+      </div>
+      <nav id="tabs" class="tabs">
+        <button data-tab="inicio" class="on">Inicio</button>
+        <button data-tab="ips">IPs y equipos</button>
+        <button data-tab="switches">Switches</button>
+        <button data-tab="diagrama">Diagrama</button>
+        <button data-tab="checklist">Paso a paso</button>
+        <button data-tab="ayuda">Ayuda</button>
+        <button data-tab="ia">Asistente IA</button>
+      </nav>
+      <div class="top-actions">
+        <button class="btn" id="btnXlsx">Excel</button>
+        <button class="btn" id="btnPdf">PDF</button>
+        <button class="btn ghost" id="btnMenu" title="Más">⋯</button>
+        <div id="menu" class="menu" hidden>
+          <button id="btnSaveJson">Guardar proyecto (.json)</button>
+          <label class="menu-file">Abrir proyecto (.json)<input type="file" id="fileJson" accept=".json" hidden /></label>
+          <button id="btnReset">Restaurar ejemplo</button>
+          <button id="btnLogout">Salir</button>
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <!-- INICIO -->
+      <section id="tab-inicio" class="tab on">
+        <div class="grid2">
+          <div class="card">
+            <h2>Proyecto</h2>
+            <div class="form">
+              <label>Nombre<input data-bind="meta.nombre" /></label>
+              <label>Lugar<input data-bind="meta.lugar" /></label>
+              <label>Fecha<input type="date" data-bind="meta.fecha" /></label>
+              <label>Responsable<input data-bind="meta.responsable" /></label>
+              <label class="full">Notas<textarea data-bind="meta.notas" rows="3"></textarea></label>
+            </div>
+            <h3>Red</h3>
+            <div class="form">
+              <label>Subred (3 primeros números)<input data-bind="red.subred" class="mono" /></label>
+              <label>Máscara<input data-bind="red.mascara" class="mono" readonly title="Este asistente trabaja con /24 (255.255.255.0)" /></label>
+              <label>Gateway<input data-bind="red.gateway" class="mono" placeholder="vacío: sin internet" /></label>
+            </div>
+          </div>
+          <div class="card">
+            <h2>Estado</h2>
+            <div id="stats" class="stats"></div>
+            <h3>Validación automática</h3>
+            <ul id="validacion" class="issues"></ul>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Decisiones pendientes</h2>
+          <p class="hint">Estas respuestas definen la configuración. Mientras estén vacías, el plan no está listo para show.</p>
+          <div class="form cols3" id="decisiones"></div>
+        </div>
+      </section>
+
+      <!-- IPS -->
+      <section id="tab-ips" class="tab">
+        <div class="card">
+          <div class="card-head">
+            <h2>IPs y equipos</h2>
+            <div>
+              <button class="btn" id="btnSugerir">Sugerir IP libre</button>
+              <button class="btn primary" id="btnAdd">+ Agregar equipo</button>
+            </div>
+          </div>
+          <p class="hint">Subred <b class="mono" id="lblSubred"></b>.x · máscara 255.255.255.0 · Nombres únicos (Dante rutea por nombre). Bloques propuestos:</p>
+          <div id="bloques" class="chips"></div>
+          <div class="table-wrap">
+            <table class="tbl" id="tblEquipos">
+              <thead><tr>
+                <th>Nombre</th><th>Tipo</th><th>Equipo</th><th>Interfaz</th><th>IP</th><th>Switch</th><th>Puerto</th><th>Estado</th><th>Notas</th><th></th>
+              </tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SWITCHES -->
+      <section id="tab-switches" class="tab">
+        <div id="swList"></div>
+      </section>
+
+      <!-- DIAGRAMA -->
+      <section id="tab-diagrama" class="tab">
+        <div class="card">
+          <div class="card-head"><h2>Diagrama de red</h2><button class="btn" id="btnSvg">Descargar SVG</button></div>
+          <p class="hint">Se genera solo a partir de la tabla de equipos y puertos. Línea punteada = equipo pendiente.</p>
+          <div id="diagram" class="diagram"></div>
+        </div>
+      </section>
+
+      <!-- CHECKLIST -->
+      <section id="tab-checklist" class="tab">
+        <div class="card">
+          <h2>Paso a paso</h2>
+          <p class="hint">Cada paso indica su fuente oficial. Los marcados <span class="badge warn">PENDIENTE</span> aún no se pueden verificar.</p>
+          <div id="checklist"></div>
+        </div>
+      </section>
+
+      <!-- AYUDA -->
+      <section id="tab-ayuda" class="tab">
+        <div class="grid2">
+          <div class="card"><h2>Problemas comunes</h2><div id="problemas"></div></div>
+          <div class="card"><h2>Glosario</h2><dl id="glosario" class="glos"></dl><h3>Fuentes</h3><ul id="fuentes" class="fuentes"></ul></div>
+        </div>
+      </section>
+
+      <!-- IA -->
+      <section id="tab-ia" class="tab">
+        <div class="card chat">
+          <div class="card-head">
+            <h2>Asistente IA</h2>
+            <button class="btn primary" id="btnReview">Revisar mi proyecto</button>
+          </div>
+          <p class="hint">Responde con fuentes. ✅ verificado · ⚠️ por verificar · 🔴 crítico. La IA puede equivocarse: confirma siempre con el manual.</p>
+          <div id="chatLog" class="chat-log"></div>
+          <form id="chatForm" class="chat-form">
+            <textarea id="chatIn" rows="2" placeholder="Ej. ¿Por qué la SQ6 debe tomar reloj del I/O Port?"></textarea>
+            <button class="btn primary" type="submit">Enviar</button>
+          </form>
+        </div>
+      </section>
+    </main>
+    <footer class="foot">AUDIOESCENA · Audioredes v1 · Los datos se guardan solo en este navegador.</footer>
+  </div>
+
+  <div id="toast" class="toast" hidden></div>
+
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="vendor/jspdf.plugin.autotable.min.js"></script>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
