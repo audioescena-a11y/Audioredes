@@ -1,10 +1,11 @@
 // POST /api/ask  (Authorization: Bearer <token>)
 // body: { messages: [{role, content}], project: {...}, mode: "chat" | "review" }
-const { verifyToken, bearer, json } = require("../lib/auth");
-const KB = require("../lib/kb");
+// Función v2: Netlify AI Gateway inyecta ANTHROPIC_API_KEY y ANTHROPIC_BASE_URL solo en este formato.
+import { verifyToken, bearer, json } from "../lib/auth.mjs";
+import KB from "../lib/kb.js";
 
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
-const API_VERSION = process.env.ANTHROPIC_VERSION || "2026-10-21";
+const API_VERSION = process.env.ANTHROPIC_VERSION || "2023-06-01";
 const MAX_TOKENS = Number(process.env.ANTHROPIC_MAX_TOKENS || 1600);
 
 const SYSTEM = `Eres el asistente técnico de AUDIOREDES (AUDIOESCENA): experto en redes IP, Audio over IP, Dante/Audinate, switches administrables y sistemas de audio profesional.
@@ -29,16 +30,17 @@ function clean(messages) {
     .map((m) => ({ role: m.role, content: m.content.slice(0, 6000) }));
 }
 
-exports.handler = async (event) => {
-  if (event.httpMethod !== "POST") return json(405, { error: "Método no permitido" });
-  if (!verifyToken(bearer(event))) return json(401, { error: "Sesión vencida. Vuelve a entrar." });
+export default async (req) => {
+  if (req.method !== "POST") return json(405, { error: "Método no permitido" });
+  if (!(await verifyToken(bearer(req)))) return json(401, { error: "Sesión vencida. Vuelve a entrar." });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return json(500, { error: "Falta configurar ANTHROPIC_API_KEY en Netlify." });
+  if (!apiKey) return json(500, { error: "La IA no está disponible (falta ANTHROPIC_API_KEY)." });
+  const baseUrl = (process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com").replace(/\/$/, "");
 
   let body;
   try {
-    body = JSON.parse(event.body || "{}");
+    body = JSON.parse((await req.text()) || "{}");
   } catch {
     return json(400, { error: "Solicitud inválida" });
   }
@@ -58,7 +60,7 @@ exports.handler = async (event) => {
   last.content = `MODO: ${mode}\n\nPROYECTO ACTUAL (JSON):\n${projectText || "(vacío)"}\n\nMENSAJE:\n${last.content}`;
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch(`${baseUrl}/v1/messages`, {
       method: "POST",
       headers: {
         "x-api-key": apiKey,
