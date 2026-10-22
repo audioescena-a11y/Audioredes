@@ -5,9 +5,16 @@ const crypto = require("crypto");
 const SESSION_HOURS = 12;
 
 function secret() {
-  const s = process.env.SESSION_SECRET;
-  if (!s || s.length < 16) return null;
+  const s = (process.env.SESSION_SECRET || "").trim();
+  if (s.length < 16) return null;
   return s;
+}
+
+// Mensaje claro según el problema: no existe o es demasiado corta
+function secretError() {
+  const s = (process.env.SESSION_SECRET || "").trim();
+  if (!s) return "Falta configurar SESSION_SECRET en Netlify (y volver a desplegar después de agregarla).";
+  return `SESSION_SECRET es muy corta (${s.length} caracteres). Debe tener mínimo 16.`;
 }
 
 function b64url(buf) {
@@ -58,4 +65,4 @@ function json(statusCode, obj) {
   };
 }
 
-module.exports = { issueToken, verifyToken, bearer, normalize, json, secret, crypto };
+module.exports = { issueToken, verifyToken, bearer, normalize, json, secret, secretError, crypto };

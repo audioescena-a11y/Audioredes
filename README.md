@@ -9,7 +9,7 @@ public/              → lo que ve el usuario (HTML, CSS, JS, librerías locales
   assets/logo.png    → AQUÍ va el logo de AUDIOESCENA (PNG, fondo transparente)
 netlify/functions/   → código que corre en el servidor (la clave y la API key NO están en el HTML)
   login.js           → verifica "¿A qué sabe el Omelette?"
-  ask.js             → asistente IA (Anthropic)
+  ask.mjs            → asistente IA (Anthropic, vía Netlify AI Gateway)
 netlify/lib/         → utilidades y base de conocimiento verificada (kb.js)
 netlify.toml         → configuración de Netlify
 test/dev-server.js   → servidor para probar en tu computadora
@@ -21,9 +21,9 @@ test/dev-server.js   → servidor para probar en tu computadora
 |---|---|---|
 | `ACCESS_ANSWER` | `Ahuevo` | Sí |
 | `SESSION_SECRET` | Texto aleatorio largo (mínimo 16 caracteres, ej. 40 letras y números al azar) | Sí |
-| `ANTHROPIC_API_KEY` | Tu API key de console (platform.claude.com) | Sí, para la IA |
+| `ANTHROPIC_API_KEY` | No hace falta: Netlify AI Gateway la pone sola. No crees esta variable (si la creas, se desactiva el Gateway) | No |
 | `ANTHROPIC_MODEL` | Por defecto `claude-sonnet-5-5` | No |
-| `ANTHROPIC_VERSION` | Por defecto `2026-10-21` | No |
+| `ANTHROPIC_VERSION` | Por defecto `2023-06-01` | No |
 
 La respuesta acepta mayúsculas/minúsculas, acentos, espacios y signos: "ahuevo", "¡AHUEVO!" y "Ahuevo" funcionan. La sesión dura 12 horas.
 

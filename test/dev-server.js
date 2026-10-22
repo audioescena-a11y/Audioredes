@@ -12,7 +12,7 @@ const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/cs
 if (process.env.MOCK_AI === "1") {
   const realFetch = global.fetch;
   global.fetch = async (url, opts) => {
-    if (String(url).startsWith("https://api.anthropic.com")) {
+    if (String(url).endsWith("/v1/messages")) {
       const body = JSON.parse(opts.body);
       global.__lastAI = { headers: opts.headers, body };
       return new Response(JSON.stringify({ content: [{ type: "text", text: "✅ Respuesta simulada. Recibí " + body.messages.length + " mensaje(s). Modelo: " + body.model }] }), { status: 200 });
@@ -23,12 +23,20 @@ if (process.env.MOCK_AI === "1") {
 
 const fns = {
   login: require("../netlify/functions/login").handler,
-  ask: require("../netlify/functions/ask").handler,
 };
+let askV2; // ask.mjs es una función v2 (ESM): recibe Request y devuelve Response
+const loadAsk = () => (askV2 ||= import("../netlify/functions/ask.mjs").then((m) => m.default));
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   const m = /^\/(?:api|\.netlify\/functions)\/(\w+)$/.exec(url.pathname);
+  if (m && m[1] === "ask") {
+    let body = "";
+    for await (const c of req) body += c;
+    const r = await (await loadAsk())(new Request("http://localhost" + req.url, { method: req.method, headers: req.headers, body: req.method === "POST" ? body : undefined }));
+    res.writeHead(r.status, Object.fromEntries(r.headers));
+    return res.end(await r.text());
+  }
   if (m && fns[m[1]]) {
     let body = "";
     for await (const c of req) body += c;

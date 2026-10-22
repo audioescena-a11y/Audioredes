@@ -1,10 +1,10 @@
 // POST /api/login  { answer }  -> { token }
 // GET  /api/login  (Authorization: Bearer <token>) -> { ok: true } si la sesión sigue vigente
-const { issueToken, verifyToken, bearer, normalize, json, secret, crypto } = require("../lib/auth");
+const { issueToken, verifyToken, bearer, normalize, json, secret, secretError, crypto } = require("../lib/auth");
 
 exports.handler = async (event) => {
   if (!secret()) {
-    return json(500, { error: "Falta configurar SESSION_SECRET (mínimo 16 caracteres) en Netlify." });
+    return json(500, { error: secretError() });
   }
 
   if (event.httpMethod === "GET") {
