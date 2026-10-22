@@ -1,0 +1,7 @@
+{
+  "name": "audioredes",
+  "private": true,
+  "dependencies": {
+    "@netlify/blobs": "^10.0.0"
+  }
+}

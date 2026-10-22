@@ -1,22 +1,8 @@
 // POST /api/ask  (Authorization: Bearer <token>)
 // body: { messages: [{role, content}], project: {...}, mode: "chat" | "review" }
 // Función v2: Netlify AI Gateway inyecta ANTHROPIC_API_KEY y ANTHROPIC_BASE_URL solo en este formato.
-import auth from "../lib/auth.js";
+import { verifyToken, bearer, json } from "../lib/auth.mjs";
 import KB from "../lib/kb.js";
-
-const { verifyToken } = auth;
-
-function json(status, obj) {
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" },
-  });
-}
-
-function bearer(req) {
-  const v = req.headers.get("authorization") || "";
-  return v.startsWith("Bearer ") ? v.slice(7) : "";
-}
 
 const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 const API_VERSION = process.env.ANTHROPIC_VERSION || "2023-06-01";
@@ -46,7 +32,7 @@ function clean(messages) {
 
 export default async (req) => {
   if (req.method !== "POST") return json(405, { error: "Método no permitido" });
-  if (!verifyToken(bearer(req))) return json(401, { error: "Sesión vencida. Vuelve a entrar." });
+  if (!(await verifyToken(bearer(req)))) return json(401, { error: "Sesión vencida. Vuelve a entrar." });
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return json(500, { error: "La IA no está disponible (falta ANTHROPIC_API_KEY)." });

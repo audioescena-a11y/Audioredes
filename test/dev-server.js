@@ -21,28 +21,20 @@ if (process.env.MOCK_AI === "1") {
   };
 }
 
-const fns = {
-  login: require("../netlify/functions/login").handler,
-};
-let askV2; // ask.mjs es una función v2 (ESM): recibe Request y devuelve Response
-const loadAsk = () => (askV2 ||= import("../netlify/functions/ask.mjs").then((m) => m.default));
+// Las funciones son v2 (ESM): reciben Request y devuelven Response
+const fns = {};
+const load = (name) => (fns[name] ||= import(`../netlify/functions/${name}.mjs`).then((m) => m.default));
 
 http.createServer(async (req, res) => {
   const url = new URL(req.url, "http://x");
   const m = /^\/(?:api|\.netlify\/functions)\/(\w+)$/.exec(url.pathname);
-  if (m && m[1] === "ask") {
+  if (m && ["login", "ask"].includes(m[1])) {
     let body = "";
     for await (const c of req) body += c;
-    const r = await (await loadAsk())(new Request("http://localhost" + req.url, { method: req.method, headers: req.headers, body: req.method === "POST" ? body : undefined }));
+    const hasBody = req.method !== "GET" && req.method !== "HEAD";
+    const r = await (await load(m[1]))(new Request("http://localhost" + req.url, { method: req.method, headers: req.headers, body: hasBody ? body : undefined }));
     res.writeHead(r.status, Object.fromEntries(r.headers));
     return res.end(await r.text());
-  }
-  if (m && fns[m[1]]) {
-    let body = "";
-    for await (const c of req) body += c;
-    const r = await fns[m[1]]({ httpMethod: req.method, headers: req.headers, body });
-    res.writeHead(r.statusCode, r.headers);
-    return res.end(r.body);
   }
   if (url.pathname === "/__lastai") { res.writeHead(200); return res.end(JSON.stringify(global.__lastAI || null)); }
   let p = path.join(ROOT, decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname));

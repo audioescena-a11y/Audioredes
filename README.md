@@ -8,7 +8,7 @@ Webapp para planear redes Dante: IPs, switches, diagrama, paso a paso con fuente
 public/              → lo que ve el usuario (HTML, CSS, JS, librerías locales)
   assets/logo.png    → AQUÍ va el logo de AUDIOESCENA (PNG, fondo transparente)
 netlify/functions/   → código que corre en el servidor (la clave y la API key NO están en el HTML)
-  login.js           → verifica "¿A qué sabe el Omelette?"
+  login.mjs          → verifica "¿A qué sabe el Omelette?"
   ask.mjs            → asistente IA (Anthropic, vía Netlify AI Gateway)
 netlify/lib/         → utilidades y base de conocimiento verificada (kb.js)
 netlify.toml         → configuración de Netlify
@@ -20,7 +20,7 @@ test/dev-server.js   → servidor para probar en tu computadora
 | Variable | Valor | ¿Obligatoria? |
 |---|---|---|
 | `ACCESS_ANSWER` | `Ahuevo` | Sí |
-| `SESSION_SECRET` | Texto aleatorio largo (mínimo 16 caracteres, ej. 40 letras y números al azar) | Sí |
+| `SESSION_SECRET` | Texto aleatorio largo (mínimo 16 caracteres). Si no existe o es muy corta, la app genera uno sola y lo guarda en Netlify Blobs | No |
 | `ANTHROPIC_API_KEY` | No hace falta: Netlify AI Gateway la pone sola. No crees esta variable (si la creas, se desactiva el Gateway) | No |
 | `ANTHROPIC_MODEL` | Por defecto `claude-sonnet-5-5` | No |
 | `ANTHROPIC_VERSION` | Por defecto `2023-06-01` | No |
