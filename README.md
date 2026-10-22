@@ -19,13 +19,13 @@ test/dev-server.js   → servidor para probar en tu computadora
 
 | Variable | Valor | ¿Obligatoria? |
 |---|---|---|
-| `ACCESS_ANSWER` | `Ahuevo` | Sí |
+| `ACCESS_ANSWER` | La respuesta a la pregunta de acceso (no la escribas en el código ni en este archivo) | Sí |
 | `SESSION_SECRET` | Texto aleatorio largo (mínimo 16 caracteres). Si no existe o es muy corta, la app genera uno sola y lo guarda en Netlify Blobs | No |
 | `ANTHROPIC_API_KEY` | No hace falta: Netlify AI Gateway la pone sola. No crees esta variable (si la creas, se desactiva el Gateway) | No |
 | `ANTHROPIC_MODEL` | Por defecto `claude-sonnet-5-5` | No |
 | `ANTHROPIC_VERSION` | Por defecto `2023-06-01` | No |
 
-La respuesta acepta mayúsculas/minúsculas, acentos, espacios y signos: "ahuevo", "¡AHUEVO!" y "Ahuevo" funcionan. La sesión dura 12 horas.
+La respuesta acepta mayúsculas/minúsculas, acentos, espacios y signos: por ejemplo, "respuesta", "¡RESPUESTA!" y "Respuesta" cuentan como la misma. La sesión dura 12 horas.
 
 ## Publicar en Netlify
 
@@ -46,7 +46,7 @@ La respuesta acepta mayúsculas/minúsculas, acentos, espacios y signos: "ahuevo
 ## Probar en tu computadora
 
 ```
-ACCESS_ANSWER=Ahuevo SESSION_SECRET=prueba-secreta-1234567890 MOCK_AI=1 ANTHROPIC_API_KEY=x node test/dev-server.js
+ACCESS_ANSWER=tu-respuesta SESSION_SECRET=prueba-secreta-1234567890 MOCK_AI=1 ANTHROPIC_API_KEY=x node test/dev-server.js
 ```
 Abre http://localhost:8888. Con `MOCK_AI=1` la IA responde con un texto de prueba y no gasta créditos. Quita `MOCK_AI` y pon tu API key real para probar la IA de verdad.
 

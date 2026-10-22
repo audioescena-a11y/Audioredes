@@ -1,5 +1,5 @@
 // Servidor local de prueba: sirve /public y ejecuta las funciones como Netlify.
-// Uso:  ACCESS_ANSWER=Ahuevo SESSION_SECRET=algo-largo-de-16+ node test/dev-server.js
+// Uso:  ACCESS_ANSWER=tu-respuesta SESSION_SECRET=algo-largo-de-16+ node test/dev-server.js
 // Si MOCK_AI=1, simula la respuesta de Anthropic (no gasta créditos).
 const http = require("http");
 const fs = require("fs");
